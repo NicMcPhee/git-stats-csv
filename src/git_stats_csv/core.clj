@@ -12,8 +12,19 @@
 (defn get-repo-json [api-url]
   (json/read-str (slurp api-url)))
 
+(def desired-keys
+  [
+   "name"
+   "html_url"
+   "language"
+   "commits"
+   "contributors"
+   "watchers"
+   "stargazers_count"
+   "forks"])
+
 (defn extract-stats [repo-map]
-  (map #(get repo-map %) ["name" "html_url" "language" "forks" "watchers"]))
+  (select-keys repo-map desired-keys))
 
 (defn stats-to-csv-line [x] x)
 
@@ -26,13 +37,12 @@
    a CSV file containing various statistics about those repositories."
   [repo-name-file & args]
   (println
-  (->>
-    repo-name-file
-    (read-repo-names)
-    (map repo-name-2-api-url)
-    (map get-repo-json)
-    (map extract-stats)
-    (map stats-to-csv-line)
-    (join-csv-lines)
-    (print-csv-file)
-    )))
+   (->>
+     repo-name-file
+     (read-repo-names)
+     (map repo-name-2-api-url)
+     (map get-repo-json)
+     (map extract-stats)
+     (map stats-to-csv-line)
+     (join-csv-lines)
+     (print-csv-file))))
